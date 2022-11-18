@@ -22,7 +22,7 @@ class _ModulePageState extends State<ModulePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Services.getModules().then((modules) => _modules = modules as List<Module>);
+    //Services.getModules().then((modules) => _modules = modules as List<Module>);
     setState(() {
       
     });
