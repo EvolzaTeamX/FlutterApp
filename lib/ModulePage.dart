@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:login/Models/Model_Student.dart';
 import 'package:login/Models/Model_Module.dart';
+import 'package:login/ModuleForm.dart';
 import 'package:login/Services/Services.dart';
 import 'package:login/SideBar.dart';
 import 'package:login/listItem.dart';
@@ -16,17 +18,19 @@ class ModulePage extends StatefulWidget {
 }
 
 class _ModulePageState extends State<ModulePage> {
-  //final List modules = ["Module 1", "Module 2","Module 3"];
-  List<Module> _modules = [];
-   @override
+  late List<Module> modules = [];
+  @override
   void initState() {
-    // TODO: implement initState
-    super.initState();
-    //Services.getModules().then((modules) => _modules = modules as List<Module>);
-    setState(() {
-      
+    Future.delayed(const Duration(milliseconds: 500), () {
+      getmodule();
     });
   }
+
+  void getmodule() async {
+    modules = (await Services.fetchModule())!;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,15 +40,40 @@ class _ModulePageState extends State<ModulePage> {
       ),
       body: Column(
         children: [
-          Text("Grid View",style: TextStyle(fontSize: 55,color: Colors.white),),
+          Text(
+            "Grid View",
+            style: TextStyle(fontSize: 55, color: Colors.white),
+          ),
           Padding(padding: EdgeInsets.all(5)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: ((context) => ModuleForm(
+                              operation: "post",
+                              refresh: (() => initState()),
+                            )));
+                  },
+                  child: Icon(Icons.add)),
+              ElevatedButton(onPressed: () {}, child: Icon(Icons.refresh)),
+            ],
+          ),
           Expanded(
             child: GridView.builder(
-                gridDelegate:
-                    SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-                itemCount: _modules.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2),
+                itemCount: modules!.length,
                 itemBuilder: (context, index) {
-                  return GridTile(child: Module(child: _modules[index],));
+                  return GridTile(
+                      child: ModuleItem(
+                    objectid: modules![index].objectid,
+                    moduleId: modules![index].moduleId,
+                    moduleName: modules![index].moduleName,
+                    refresh: () => initState()
+                  ));
                 }),
           ),
         ],
@@ -55,21 +84,67 @@ class _ModulePageState extends State<ModulePage> {
   }
 }
 
-class Module extends StatelessWidget {
-  final child;
-  const Module({this.child});
+class ModuleItem extends StatelessWidget {
+  final objectid;
+  final moduleId;
+  final moduleName;
+  final VoidCallback? refresh;
+  const ModuleItem({this.moduleId, this.moduleName, this.objectid,this.refresh});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(5),
       child: Container(
-        child: Center(child:Text(child,style: TextStyle(color: Colors.white),)),
         width: 200,
         height: 400,
         decoration: BoxDecoration(
             border: Border.all(color: Colors.orange),
             borderRadius: BorderRadius.circular(20)),
+        child: Center(
+          child: Align(
+            alignment: Alignment.center,
+            child: Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    moduleId,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  const Padding(padding: EdgeInsets.all(5)),
+                  Text(
+                    moduleName,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: ((context) => ModuleForm(
+                                      objectId: objectid,
+                                      operation: "put",
+                                     
+                                    )));
+                          },
+                          icon: Image.asset("lib/Assets/edit1.png")),
+                      IconButton(
+                          onPressed: () async {
+                            await Services.deleteModule(objectid);
+                            return refresh!();
+                          },
+                          icon: Image.asset("lib/Assets/delete.png"))
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
