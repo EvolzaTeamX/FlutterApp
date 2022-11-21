@@ -40,7 +40,7 @@ class _ModulePageState extends State<ModulePage> {
       ),
       body: Column(
         children: [
-          Text(
+          const Text(
             "Grid View",
             style: TextStyle(fontSize: 55, color: Colors.white),
           ),
@@ -63,7 +63,7 @@ class _ModulePageState extends State<ModulePage> {
           ),
           Expanded(
             child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2),
                 itemCount: modules!.length,
                 itemBuilder: (context, index) {
